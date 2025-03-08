@@ -27,20 +27,20 @@ function WeatherFetch() {
 
   return (
     <div className="container-fluid py-3">
-      <h3> Real-time weather </h3>
-      <div className="d-flex my-3" role="search">
+      <div
+        className="d-flex my-5 flex-column justify-content-center align-items-center"
+        role="search"
+      >
+        <h2 className="mb-3">Weather</h2>
         <input
-          className="form-control me-2"
+          className="form-control w-50 mb-3"
           type="search"
-          placeholder="Search"
+          placeholder="Search any city..."
+          value={location}
           onChange={(e) => setLocation(e.target.value)}
-        ></input>
-        <button
-          className="btn btn-outline-primary"
-          onClick={getWeather}
-          type="submit"
-        >
-          Search
+        />
+        <button onClick={getWeather} className="btn btn-dark mb-3 fs-4 px-3">
+          Fetch
         </button>
       </div>
 

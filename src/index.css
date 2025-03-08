@@ -1,0 +1,6 @@
+.form-control:focus {
+  border-color: #000;
+  /* Dark border */
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0.8);
+  /* Dark glow */
+}
