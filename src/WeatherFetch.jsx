@@ -4,25 +4,42 @@ function WeatherFetch() {
   const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY;
   const [weather, setWeather] = useState({});
   const [location, setLocation] = useState("");
+  const [error, setError] = useState(null);
 
   function kelvinToCelsius(kelvin) {
     return Math.round((kelvin - 273.15) * 100) / 100;
   }
   async function getWeather() {
-    const response = await fetch(
-      `http://api.openweathermap.org/geo/1.0/direct?q=${location}&limit=1&appid=${API_KEY}`
-    );
+    if (!location) {
+      setError("Please enter a city name.");
+      return;
+    }
 
-    const data = await response.json();
-    const lat = data[0].lat;
-    const lon = data[0].lon;
-    console.log(data, lat, lon);
-    const response2 = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}`
-    );
-    const data2 = await response2.json();
-    console.log(data2);
-    setWeather(data2);
+    setError(null);
+
+    try {
+      const geoResponse = await fetch(
+        `http://api.openweathermap.org/geo/1.0/direct?q=${location}&limit=1&appid=${API_KEY}`
+      );
+      const geoData = await geoResponse.json();
+
+      if (!geoData || geoData.length === 0) {
+        setError("City not found. Please try another.");
+        return;
+      }
+
+      const lat = geoData[0].lat;
+      const lon = geoData[0].lon;
+
+      const weatherResponse = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}`
+      );
+      const weatherData = await weatherResponse.json();
+      setWeather(weatherData);
+    } catch (err) {
+      setError("Failed to fetch weather data. Try again later.");
+      console.error(err);
+    }
   }
 
   return (
@@ -42,6 +59,7 @@ function WeatherFetch() {
         <button onClick={getWeather} className="btn btn-dark mb-3 fs-4 px-3">
           Fetch
         </button>
+        {error && <p className="text-danger">{error}</p>}
       </div>
 
       <div style={{ backgroundColor: "#eee" }} className="showWeather">
