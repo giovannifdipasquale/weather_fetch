@@ -35,11 +35,27 @@ function WeatherFetch() {
         `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}`
       );
       const weatherData = await weatherResponse.json();
+      const timezoneOffsetSeconds = weatherData.timezone;
       setWeather(weatherData);
     } catch (err) {
       setError("Failed to fetch weather data. Try again later.");
       console.error(err);
     }
+  }
+  function getSunriseTime(weatherData) {
+    const timezoneOffsetSeconds = weatherData.timezone;
+    const sunriseUtc = weatherData.sys.sunrise;
+    const sunriseLocal = new Date((sunriseUtc + timezoneOffsetSeconds) * 1000);
+
+    return sunriseLocal.toLocaleTimeString();
+  }
+
+  function getSunsetTime(weatherData) {
+    const timezoneOffsetSeconds = weatherData.timezone;
+    const sunsetUtc = weatherData.sys.sunset;
+    const sunsetLocal = new Date((sunsetUtc + timezoneOffsetSeconds) * 1000);
+
+    return sunsetLocal.toLocaleTimeString();
   }
 
   return (
@@ -64,141 +80,43 @@ function WeatherFetch() {
 
       <div style={{ backgroundColor: "#eee" }} className="showWeather">
         {weather.main && (
-          <div>
-            <h4>Weather Details:</h4>
-            <h5>
-              <span className="bg-warning p-1">{weather.name}</span>
-            </h5>
-            <div className="border border-4 border-dark w-25 p-3 mb-2">
+          <div className="bg-light w-50 text-dark p-4 rounded shadow m-2">
+            <h2 className="fs-5 fw-bold mb-3">Overview</h2>
+            <div className="d-flex align-items-start">
               <img
-                src={`http://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`}
+                className="icon-overview"
+                src={`http://openweathermap.org/img/wn/${weather.weather[0].icon}@4x.png`}
                 alt="weather icon"
-                className="bg-secondary"
+                style={{ height: "150px", width: "150px" }}
               />
-              <br />
-              <span className="fw-bold">{weather.weather[0].description}</span>
+              <div className="parameters text-start ms-4">
+                <p className="mb-1">
+                  <i className="bi bi-thermometer-half me-1"></i> Temperature:{" "}
+                  {kelvinToCelsius(weather.main.temp)}°C
+                </p>
+                <p className="mb-1 text-muted fs-6">
+                  (Min: {kelvinToCelsius(weather.main.temp_min)}°C, Max:{" "}
+                  {kelvinToCelsius(weather.main.temp_max)}°C, Feels:{" "}
+                  {kelvinToCelsius(weather.main.feels_like)}°C)
+                </p>
+                <p className="mb-1">
+                  <i className="bi bi-droplet-half me-1"></i> Humidity:{" "}
+                  {weather.main.humidity}%
+                </p>
+                <p className="mb-1">
+                  <i className="bi bi-wind me-1"></i> Wind: {weather.wind.speed}{" "}
+                  m/s
+                </p>
+                <p className="mb-1">
+                  <i className="bi bi-sunrise me-1"></i> Sunrise:{" "}
+                  {getSunriseTime(weather)}
+                </p>
+                <p className="mb-1">
+                  <i className="bi bi-sunset me-1"></i> Sunset:{" "}
+                  {getSunsetTime(weather)}
+                </p>
+              </div>
             </div>
-
-            {/* Temperature Section */}
-            <p className="fw-bold bg-secondary text-warning fs-2 m-0">
-              <i className="bi bi-thermometer ms-2"></i> Temperature
-            </p>
-            <table className="table">
-              <tbody className="border border-dark">
-                <tr className="border-dark">
-                  <td className="text-center border-end border-dark">
-                    <span className="fw-bold">now: </span>
-                    {kelvinToCelsius(weather.main.temp)} °C
-                  </td>
-                  <td className="text-center">
-                    <span className="fw-bold">min: </span>
-                    {kelvinToCelsius(weather.main.temp_min)} °C
-                  </td>
-                </tr>
-                <tr className="border-dark">
-                  <td className="text-center border-end border-dark">
-                    <span className="fw-bold">feels like: </span>
-                    {kelvinToCelsius(weather.main.feels_like)} °C
-                  </td>
-                  <td className="text-center">
-                    <span className="fw-bold">max: </span>
-                    {kelvinToCelsius(weather.main.temp_max)} °C
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            {/* Humidity & Pressure Section */}
-            <p className="fw-bold bg-secondary text-warning fs-2 m-0">
-              <i className="bi bi-droplet-fill ms-2"></i> Humidity & Pressure
-            </p>
-            <table className="table">
-              <tbody className="border border-dark">
-                <tr className="border-dark">
-                  <td className="text-center border-end border-dark">
-                    <span className="fw-bold">Humidity: </span>
-                    {weather.main.humidity}%
-                  </td>
-                  <td className="text-center">
-                    <span className="fw-bold">Pressure: </span>
-                    {weather.main.pressure} hPa
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            {/* Wind Section */}
-            {weather.wind && (
-              <>
-                <p className="fw-bold bg-secondary text-warning fs-2 m-0">
-                  <i className="bi bi-wind ms-2"></i> Wind
-                </p>
-                <table className="table">
-                  <tbody className="border border-dark">
-                    <tr className="border-dark">
-                      <td className="text-center border-end border-dark">
-                        <span className="fw-bold">Speed: </span>
-                        {weather.wind.speed} m/s
-                      </td>
-                      <td className="text-center">
-                        <span className="fw-bold">Direction: </span>
-                        {weather.wind.deg}°
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </>
-            )}
-
-            {/* Clouds & Visibility Section */}
-            {weather.clouds && (
-              <>
-                <p className="fw-bold bg-secondary text-warning fs-2 m-0">
-                  <i className="bi bi-cloud ms-2"></i> Clouds & Visibility
-                </p>
-                <table className="table">
-                  <tbody className="border border-dark">
-                    <tr className="border-dark">
-                      <td className="text-center border-end border-dark">
-                        <span className="fw-bold">Cloudiness: </span>
-                        {weather.clouds.all}%
-                      </td>
-                      <td className="text-center">
-                        <span className="fw-bold">Visibility: </span>
-                        {weather.visibility} m
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </>
-            )}
-
-            {/* Sunrise & Sunset Section */}
-            {weather.sys && (
-              <>
-                <p className="fw-bold bg-secondary text-warning fs-2 m-0">
-                  <i className="bi bi-sunrise ms-2"></i> Sunrise & Sunset
-                </p>
-                <table className="table">
-                  <tbody className="border border-dark">
-                    <tr className="border-dark">
-                      <td className="text-center border-end border-dark">
-                        <span className="fw-bold">Sunrise: </span>
-                        {new Date(
-                          weather.sys.sunrise * 1000
-                        ).toLocaleTimeString()}
-                      </td>
-                      <td className="text-center">
-                        <span className="fw-bold">Sunset: </span>
-                        {new Date(
-                          weather.sys.sunset * 1000
-                        ).toLocaleTimeString()}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </>
-            )}
           </div>
         )}
       </div>
