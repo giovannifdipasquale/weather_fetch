@@ -1,30 +1,39 @@
 import { useState } from "react";
 
 function WeatherFetch() {
+  // State management
   const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY;
-  const [weather, setWeather] = useState({});
-  const [location, setLocation] = useState("");
-  const [error, setError] = useState(null);
+  const [weather, setWeather] = useState({}); // Current weather data
+  const [forecast, setForecast] = useState([]); // 5-day forecast data
+  const [location, setLocation] = useState(""); // User input location
+  const [error, setError] = useState(null); // Error messages
 
+  // Utility functions
   function kelvinToCelsius(kelvin) {
+    // Convert Kelvin to Celsius
     return Math.round((kelvin - 273.15) * 100) / 100;
   }
+
+  // API interaction
   async function getWeather() {
+    // Fetch current and forecast weather data
+    setError(null);
     if (!location) {
+      // Validate location
       setError("Please enter a city name.");
       return;
     }
 
-    setError(null);
-
     try {
       const geoResponse = await fetch(
+        // Fetch coordinates
         `http://api.openweathermap.org/geo/1.0/direct?q=${location}&limit=1&appid=${API_KEY}`
       );
       const geoData = await geoResponse.json();
 
       if (!geoData || geoData.length === 0) {
-        setError("City not found. Please try another.");
+        // Check if city found
+        setError("City not found.");
         return;
       }
 
@@ -32,34 +41,44 @@ function WeatherFetch() {
       const lon = geoData[0].lon;
 
       const weatherResponse = await fetch(
+        // Fetch current weather
         `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}`
       );
       const weatherData = await weatherResponse.json();
-      const timezoneOffsetSeconds = weatherData.timezone;
       setWeather(weatherData);
+
+      const forecastResponse = await fetch(
+        // Fetch 5-day forecast
+        `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}`
+      );
+      const forecastData = await forecastResponse.json();
+      setForecast(forecastData.list);
     } catch (err) {
-      setError("Failed to fetch weather data. Try again later.");
+      // Handle errors
+      setError("Fetch failed.");
       console.error(err);
     }
   }
-  function getSunriseTime(weatherData) {
-    const timezoneOffsetSeconds = weatherData.timezone;
-    const sunriseUtc = weatherData.sys.sunrise;
-    const sunriseLocal = new Date((sunriseUtc + timezoneOffsetSeconds) * 1000);
 
+  // Time conversion
+  function getSunriseTime(weatherData) {
+    // Get sunrise time
+    const sunriseUtc = weatherData.sys.sunrise;
+    const sunriseLocal = new Date((sunriseUtc + weatherData.timezone) * 1000);
     return sunriseLocal.toLocaleTimeString();
   }
 
   function getSunsetTime(weatherData) {
-    const timezoneOffsetSeconds = weatherData.timezone;
+    // Get sunset time
     const sunsetUtc = weatherData.sys.sunset;
-    const sunsetLocal = new Date((sunsetUtc + timezoneOffsetSeconds) * 1000);
-
+    const sunsetLocal = new Date((sunsetUtc + weatherData.timezone) * 1000);
     return sunsetLocal.toLocaleTimeString();
   }
 
+  // Rendering
   return (
     <div className="container-fluid py-3">
+      {/* Search input and button */}
       <div
         className="d-flex my-5 flex-column justify-content-center align-items-center"
         role="search"
@@ -78,9 +97,10 @@ function WeatherFetch() {
         {error && <p className="text-danger">{error}</p>}
       </div>
 
-      <div style={{ backgroundColor: "#eee" }} className="showWeather">
+      {/* Current weather display */}
+      <div className="showWeather row">
         {weather.main && (
-          <div className="bg-light w-50 text-dark p-4 rounded shadow m-2">
+          <div className="bg-light col-6 text-dark p-4 rounded shadow m-2">
             <h2 className="fs-5 fw-bold mb-3">Overview</h2>
             <div className="d-flex align-items-start">
               <img
@@ -120,6 +140,33 @@ function WeatherFetch() {
           </div>
         )}
       </div>
+
+      {/* 5-day forecast display in a single card */}
+      {forecast.length > 0 && (
+        <div className="bg-light text-dark p-3 rounded shadow m-2 w-75">
+          <h2 className="fs-5 fw-bold mb-3">5-Day Forecast</h2>
+          <div className="d-flex justify-content-around">
+            {forecast
+              .filter((item, index) => index % 8 === 0)
+              .map((item) => (
+                <div key={item.dt} className="text-center">
+                  <h5 className="fs-6 fw-bold mb-2">
+                    {new Date(item.dt * 1000).toLocaleDateString()}
+                  </h5>
+                  <img
+                    src={`http://openweathermap.org/img/wn/${item.weather[0].icon}@2x.png`}
+                    alt="forecast icon"
+                    style={{ height: "50px", width: "50px" }}
+                  />
+                  <p className="mb-1">
+                    Temp: {kelvinToCelsius(item.main.temp)}°C
+                  </p>
+                  <p className="mb-1">Humidity: {item.main.humidity}%</p>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
