@@ -5,6 +5,7 @@ function WeatherFetch() {
   const API_KEY = import.meta.env.VITE_OPENWEATHER_API_KEY;
   const [weather, setWeather] = useState({}); // Current weather data
   const [forecast, setForecast] = useState([]); // 5-day forecast data
+  const [next12HoursForecast, setNext12HoursForecast] = useState([]); // Next 12 hours forecast
   const [location, setLocation] = useState(""); // User input location
   const [error, setError] = useState(null); // Error messages
 
@@ -53,6 +54,16 @@ function WeatherFetch() {
       );
       const forecastData = await forecastResponse.json();
       setForecast(forecastData.list);
+      console.log(forecastData);
+
+      // Filter for the next 12 hours
+      const now = new Date().getTime() / 1000; // Current time in seconds
+      const twelveHoursLater = now + 12 * 60 * 60; // 12 hours later in seconds
+
+      const next12Hours = forecastData.list.filter((item) => {
+        return item.dt >= now && item.dt <= twelveHoursLater;
+      });
+      setNext12HoursForecast(next12Hours);
     } catch (err) {
       // Handle errors
       setError("Fetch failed.");
@@ -98,9 +109,9 @@ function WeatherFetch() {
       </div>
 
       {/* Current weather display */}
-      <div className="showWeather row">
+      <div className="row justify-content-around mb-4">
         {weather.main && (
-          <div className="bg-light col-6 text-dark p-4 rounded shadow m-2">
+          <div className="bg-light col-6 text-dark p-4 border">
             <h2 className="fs-5 fw-bold mb-3">Overview</h2>
             <div className="d-flex align-items-start">
               <img
@@ -111,51 +122,34 @@ function WeatherFetch() {
               />
               <div className="parameters text-start ms-4">
                 <p className="mb-1">
-                  <i className="bi bi-thermometer-half me-1"></i> Temperature:{" "}
-                  {kelvinToCelsius(weather.main.temp)}°C
+                  Temperature: {kelvinToCelsius(weather.main.temp)}°C
                 </p>
                 <p className="mb-1 text-muted fs-6">
                   (Min: {kelvinToCelsius(weather.main.temp_min)}°C, Max:{" "}
                   {kelvinToCelsius(weather.main.temp_max)}°C, Feels:{" "}
                   {kelvinToCelsius(weather.main.feels_like)}°C)
                 </p>
-                <p className="mb-1">
-                  <i className="bi bi-droplet-half me-1"></i> Humidity:{" "}
-                  {weather.main.humidity}%
-                </p>
-                <p className="mb-1">
-                  <i className="bi bi-wind me-1"></i> Wind: {weather.wind.speed}{" "}
-                  m/s
-                </p>
-                <p className="mb-1">
-                  <i className="bi bi-sunrise me-1"></i> Sunrise:{" "}
-                  {getSunriseTime(weather)}
-                </p>
-                <p className="mb-1">
-                  <i className="bi bi-sunset me-1"></i> Sunset:{" "}
-                  {getSunsetTime(weather)}
-                </p>
+                <p className="mb-1">Humidity: {weather.main.humidity}%</p>
+                <p className="mb-1">Wind: {weather.wind.speed} m/s</p>
+                <p className="mb-1">Sunrise: {getSunriseTime(weather)}</p>
+                <p className="mb-1">Sunset: {getSunsetTime(weather)}</p>
               </div>
             </div>
           </div>
         )}
-      </div>
 
-      {/* 5-day forecast display in a single card */}
-      {forecast.length > 0 && (
-        <div className="bg-light text-dark p-3 rounded shadow m-2 w-75">
-          <h2 className="fs-5 fw-bold mb-3">5-Day Forecast</h2>
-          <div className="d-flex justify-content-around">
-            {forecast
-              .filter((item, index) => index % 8 === 0)
-              .map((item) => (
+        {next12HoursForecast.length > 0 && (
+          <div className="bg-light col-6 text-dark p-3 border">
+            <h2 className="fs-5 fw-bold mb-3">Next 12 Hours Forecast</h2>
+            <div className="d-flex justify-content-around">
+              {next12HoursForecast.map((item) => (
                 <div key={item.dt} className="text-center">
                   <h5 className="fs-6 fw-bold mb-2">
-                    {new Date(item.dt * 1000).toLocaleDateString()}
+                    {new Date(item.dt * 1000).toLocaleTimeString()}
                   </h5>
                   <img
                     src={`http://openweathermap.org/img/wn/${item.weather[0].icon}@2x.png`}
-                    alt="forecast icon"
+                    alt="hourly icon"
                     style={{ height: "50px", width: "50px" }}
                   />
                   <p className="mb-1">
@@ -164,6 +158,36 @@ function WeatherFetch() {
                   <p className="mb-1">Humidity: {item.main.humidity}%</p>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 5-day forecast display in a single card */}
+      {forecast.length > 0 && (
+        <div className="row justify-content-center">
+          <div className="bg-light text-dark p-3 border col-12">
+            <h2 className="fs-5 fw-bold mb-3">5-Day Forecast</h2>
+            <div className="d-flex justify-content-around">
+              {forecast
+                .filter((item, index) => index % 8 === 0)
+                .map((item) => (
+                  <div key={item.dt} className="text-center">
+                    <h5 className="fs-6 fw-bold mb-2">
+                      {new Date(item.dt * 1000).toLocaleDateString()}
+                    </h5>
+                    <img
+                      src={`http://openweathermap.org/img/wn/${item.weather[0].icon}@2x.png`}
+                      alt="forecast icon"
+                      style={{ height: "50px", width: "50px" }}
+                    />
+                    <p className="mb-1">
+                      Temp: {kelvinToCelsius(item.main.temp)}°C
+                    </p>
+                    <p className="mb-1">Humidity: {item.main.humidity}%</p>
+                  </div>
+                ))}
+            </div>
           </div>
         </div>
       )}
