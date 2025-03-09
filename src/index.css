@@ -4,3 +4,107 @@
   box-shadow: 0 0 1px rgba(0, 0, 0, 0.8);
   /* Dark glow */
 }
+
+:root {
+  --jet: #333333;
+  --air: #7A93AC;
+  --air-o: #7A93AC;
+  --anti: #EEEEED;
+  --light-gray: #eee;
+  /* Added from the previous set */
+}
+
+/* Jet (#333333) */
+.bg-jet {
+  background-color: var(--jet);
+}
+
+.text-jet {
+  color: var(--jet);
+}
+
+.border-jet {
+  border-color: var(--jet);
+}
+
+/* Air Superiority Blue (#7A93AC) */
+.bg-air {
+  background-color: var(--air);
+}
+
+.text-air {
+  color: var(--air);
+}
+
+.border-air {
+  border-color: var(--air);
+}
+
+/* Anti-flash White (#EEEEED) */
+.bg-anti {
+  background-color: var(--anti);
+}
+
+.text-anti {
+  color: var(--anti);
+}
+
+.border-anti {
+  border-color: var(--anti);
+}
+
+/* ligth-gray (#EEE)*/
+.bg-anti {
+  background-color: var(--anti);
+}
+
+.text-anti {
+  color: var(--anti);
+}
+
+.border-anti {
+  border-color: var(--anti);
+}
+
+
+
+.btn-jet {
+  background-color: var(--jet);
+  color: var(--anti);
+  border-color: var(--jet);
+
+  border-width: 2px;
+
+  border-style: solid;
+
+  /* Shadow to create depth */
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+  /* Initial position - important for transition */
+  transform: translateY(0);
+  /* Smooth transition */
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  /* Increase padding for a "chunkier" feel */
+  padding: 0.6rem 1.4rem;
+  /* Slightly rounded corners */
+  border-radius: 6px;
+}
+
+.btn-jet:hover {
+  color: var(--anti);
+  /* Keep hover colors */
+  background-color: #4d565f;
+  /* Enhance 3D effect on hover */
+  border-color: #4d565f;
+  /* Move button slightly up on hover */
+  transform: translateY(-2px);
+  /* Larger shadow on hover */
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+}
+
+/* When the button is clicked */
+.btn-jet:active {
+  /* Push button back down */
+  transform: translateY(0);
+  /* Smaller shadow when pressed */
+  box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}

@@ -85,16 +85,19 @@ function WeatherFetch() {
     const sunsetLocal = new Date((sunsetUtc + weatherData.timezone) * 1000);
     return sunsetLocal.toLocaleTimeString();
   }
+  function getLocationName() {
+    // Get location name
+    return weather.name;
+  }
 
   // Rendering
   return (
-    <div className="container-fluid py-3">
+    <div className="container-fluid m-0 p-0">
       {/* Search input and button */}
       <div
         className="d-flex my-5 flex-column justify-content-center align-items-center"
         role="search"
       >
-        <h2 className="mb-3">Weather</h2>
         <input
           className="form-control w-50 mb-3"
           type="search"
@@ -102,26 +105,43 @@ function WeatherFetch() {
           value={location}
           onChange={(e) => setLocation(e.target.value)}
         />
-        <button onClick={getWeather} className="btn btn-dark mb-3 fs-4 px-3">
-          Fetch
-        </button>
+        <div className="d-flex justify-content-center py-3 w-100">
+          <span className="me-3 fs-3">weather</span>
+          <button onClick={getWeather} className="btn btn-jet fs-4 py-0 px-3">
+            fetch
+          </button>
+        </div>
         {error && <p className="text-danger">{error}</p>}
       </div>
+      {weather.main && (
+        <div className="row justify-content-around m-0 p-0">
+          <h1 className="text-jet fw-bold py-3">{getLocationName()}</h1>
+        </div>
+      )}
 
       {/* Current weather display */}
-      <div className="row justify-content-around mb-4">
+      <div className="row justify-content-around m-0 p-0">
         {weather.main && (
-          <div className="bg-light col-6 text-dark p-4 border">
-            <h2 className="fs-5 fw-bold mb-3">Overview</h2>
+          <div className=" col-6 m-0 p-0 text-jet border">
+            <h2 className="fs-5 fw-bold p-3 text-center bg-air">
+              {" "}
+              current weather
+            </h2>
             <div className="d-flex align-items-start">
-              <img
-                className="icon-overview"
-                src={`http://openweathermap.org/img/wn/${weather.weather[0].icon}@4x.png`}
-                alt="weather icon"
-                style={{ height: "150px", width: "150px" }}
-              />
+              <div className="">
+                <img
+                  className="icon-overview"
+                  src={`http://openweathermap.org/img/wn/${weather.weather[0].icon}@4x.png`}
+                  alt="weather icon"
+                  style={{ height: "130px", width: "130px" }}
+                />
+                <p className="text-center bg-jet text-anti mb-0">
+                  {weather.weather[0].main.toLowerCase()}
+                </p>
+              </div>
               <div className="parameters text-start ms-4">
                 <p className="mb-1">
+                  <i className="bi bi-thermometer-half me-2"></i>
                   Temperature: {kelvinToCelsius(weather.main.temp)}°C
                 </p>
                 <p className="mb-1 text-muted fs-6">
@@ -129,35 +149,68 @@ function WeatherFetch() {
                   {kelvinToCelsius(weather.main.temp_max)}°C, Feels:{" "}
                   {kelvinToCelsius(weather.main.feels_like)}°C)
                 </p>
-                <p className="mb-1">Humidity: {weather.main.humidity}%</p>
-                <p className="mb-1">Wind: {weather.wind.speed} m/s</p>
-                <p className="mb-1">Sunrise: {getSunriseTime(weather)}</p>
-                <p className="mb-1">Sunset: {getSunsetTime(weather)}</p>
+                <p className="mb-1">
+                  <i className="bi bi-moisture me-2"></i>
+                  Humidity: {weather.main.humidity}%
+                </p>
+                <p className="mb-1">
+                  <i className="bi bi-wind me-2"></i>
+                  Wind: {weather.wind.speed} m/s
+                </p>
+                <span className="me-3">
+                  <i className="bi bi-sunrise me-2"></i>
+                  Sunrise: {getSunriseTime(weather)}
+                </span>
+                <span className="">
+                  <i className="bi bi-sunset me-2"></i>
+                  Sunset: {getSunsetTime(weather)}
+                </span>
               </div>
             </div>
           </div>
         )}
 
         {next12HoursForecast.length > 0 && (
-          <div className="bg-light col-6 text-dark p-3 border">
-            <h2 className="fs-5 fw-bold mb-3">Next 12 Hours Forecast</h2>
-            <div className="d-flex justify-content-around">
-              {next12HoursForecast.map((item) => (
-                <div key={item.dt} className="text-center">
-                  <h5 className="fs-6 fw-bold mb-2">
-                    {new Date(item.dt * 1000).toLocaleTimeString()}
-                  </h5>
-                  <img
-                    src={`http://openweathermap.org/img/wn/${item.weather[0].icon}@2x.png`}
-                    alt="hourly icon"
-                    style={{ height: "50px", width: "50px" }}
-                  />
-                  <p className="mb-1">
-                    Temp: {kelvinToCelsius(item.main.temp)}°C
-                  </p>
-                  <p className="mb-1">Humidity: {item.main.humidity}%</p>
-                </div>
-              ))}
+          <div className="col-6 text-jet shadow-sm m-0 p-0">
+            <h2 className="fs-5 fw-bold p-3 text-center bg-air">
+              next 12 hours
+            </h2>
+            <div className=" p-0 m-0">
+              <table className="table text-center">
+                <tbody>
+                  <tr>
+                    {next12HoursForecast.map((item) => (
+                      <td
+                        key={`forecast-${item.dt}`}
+                        className="px-3 border border-jet border-start-0 border-top-0 border-bottom-0"
+                      >
+                        <div className="d-flex flex-column align-items-center">
+                          <img
+                            src={`http://openweathermap.org/img/wn/${item.weather[0].icon}@2x.png`}
+                            alt="hourly icon"
+                            style={{ height: "50px", width: "50px" }}
+                          />
+                          <p className="mb-1">
+                            <i className="bi bi-thermometer-half me-2"></i>
+                            {kelvinToCelsius(item.main.temp)}°C
+                          </p>
+                          <p className="mb-0">
+                            <i className="bi bi-moisture me-2"></i>
+                            {item.main.humidity}%
+                          </p>
+                        </div>
+                      </td>
+                    ))}
+                  </tr>
+                  <tr className="">
+                    {next12HoursForecast.map((item) => (
+                      <td key={`time-${item.dt}`} className="fw-bold bg-jet">
+                        {new Date(item.dt * 1000).toLocaleTimeString()}
+                      </td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         )}
@@ -166,27 +219,53 @@ function WeatherFetch() {
       {/* 5-day forecast display in a single card */}
       {forecast.length > 0 && (
         <div className="row justify-content-center">
-          <div className="bg-light text-dark p-3 border col-12">
-            <h2 className="fs-5 fw-bold mb-3">5-Day Forecast</h2>
-            <div className="d-flex justify-content-around">
-              {forecast
-                .filter((item, index) => index % 8 === 0)
-                .map((item) => (
-                  <div key={item.dt} className="text-center">
-                    <h5 className="fs-6 fw-bold mb-2">
-                      {new Date(item.dt * 1000).toLocaleDateString()}
-                    </h5>
-                    <img
-                      src={`http://openweathermap.org/img/wn/${item.weather[0].icon}@2x.png`}
-                      alt="forecast icon"
-                      style={{ height: "50px", width: "50px" }}
-                    />
-                    <p className="mb-1">
-                      Temp: {kelvinToCelsius(item.main.temp)}°C
-                    </p>
-                    <p className="mb-1">Humidity: {item.main.humidity}%</p>
-                  </div>
-                ))}
+          <div className="col-12 text-jet shadow-sm m-0 p-0">
+            <h2 className="fs-5 fw-bold p-3 text-center bg-air">
+              5 days forecast
+            </h2>
+            <div className="p-0 m-0">
+              <table className="table text-center">
+                <tbody>
+                  <tr>
+                    {forecast
+                      .filter((item, index) => index % 8 === 0)
+                      .map((item) => (
+                        <td
+                          key={item.dt}
+                          className="px-3 border border-jet border-start-0 border-top-0 border-bottom-0"
+                        >
+                          <div className="d-flex flex-column align-items-center">
+                            <img
+                              src={`http://openweathermap.org/img/wn/${item.weather[0].icon}@2x.png`}
+                              alt="forecast icon"
+                              style={{ height: "50px", width: "50px" }}
+                            />
+                            <p className="mb-1">
+                              <i className="bi bi-thermometer-half me-2"></i>
+                              {kelvinToCelsius(item.main.temp)}°C
+                            </p>
+                            <p className="mb-0">
+                              <i className="bi bi-moisture me-2"></i>
+                              {item.main.humidity}%
+                            </p>
+                          </div>
+                        </td>
+                      ))}
+                  </tr>
+                  <tr className="">
+                    {forecast
+                      .filter((item, index) => index % 8 === 0)
+                      .map((item) => (
+                        <td
+                          key={`date-${item.dt}`}
+                          className="fw-bold bg-jet text-anti border border-anti border-start-0 border-top-0 border-bottom-0"
+                        >
+                          {new Date(item.dt * 1000).toLocaleDateString()}
+                        </td>
+                      ))}
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
